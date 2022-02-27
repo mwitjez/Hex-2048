@@ -48,10 +48,8 @@ class Server(QtCore.QThread):
                 while True:
                     data = self.connection.recv(512)
                     if data:
-                        #print('received {!r}'.format(data))
                         if "pos" in str(data):
                             data = str(data)
-                            #print("pozycja startowa!")
                             data = data.replace("b'posx ", "")
                             data = data.replace(" posy", "")
                             data = data.replace("'", "")
@@ -71,12 +69,10 @@ class Server(QtCore.QThread):
                 self.connection.close()
 
     def send_move(self, direction):
-        #print("wysyłam...")
         message = bytes(direction, 'utf-8')
         self.connection.sendall(message)
 
     def send_pos(self, pos_x, pos_y):
-        #print("wysyłam pozycję...")
         message = bytes("posx " + str(pos_x) + " posy" + str(pos_y), 'utf-8')
         self.connection.sendall(message)
 
@@ -107,10 +103,8 @@ class Client(QtCore.QThread):
         while True:
             data = self.sock.recv(512)
             if data:
-                #print('received {!r}'.format(data))
                 if "pos" in str(data):
                     data = str(data)
-                    #print("pozycja startowa!")
                     data = data.replace("b'posx ", "")
                     data = data.replace(" posy", "")
                     data = data.replace("'", "")
@@ -132,12 +126,10 @@ class Client(QtCore.QThread):
                     self.end_turn_signal.emit()
 
     def send_move(self, direction):
-        #print("wysyłam...")
         message = bytes(direction, 'utf-8')
         self.sock.sendall(message)
 
     def send_pos(self, pos_x, pos_y):
-        #print("wysyłam pozycję...")
         message = bytes("posx " + str(pos_x) + " posy" + str(pos_y), 'utf-8')
         self.sock.sendall(message)
 
@@ -164,7 +156,6 @@ class Field(QGraphicsItem):
         if self.value != 0:
             font = QFont("Helvetica",
                          (3 / self.size) * (40 - 4 * len(str(self.value))))
-            # rysowanie z zewnętrznych zasobów
             img = QImage()
             if self.is_enemy:
                 img.load("img/hex_enemy.png")  # inna grafika dla pola wroga
@@ -178,7 +169,6 @@ class Field(QGraphicsItem):
                           100 * (3 / self.size), 100 * (3 / self.size))
             painter.drawImage(rect, img)
             painter.setFont(font)
-            #painter.drawRect(rect)
             painter.drawText(rect, Qt.AlignCenter, str(self.value))
 
 
@@ -209,9 +199,9 @@ class ConnectWithDialog(QDialog):
     # Okno do zmiany IP
     def __init__(self, parent=None):
         super(ConnectWithDialog, self).__init__(parent)
-        self.label = QLabel("Wpisz IP przeciwnika: ")
+        self.label = QLabel("IP of your opponent: ")
         self.edit = QLineEdit("localhost")
-        self.button = QPushButton("Połącz")
+        self.button = QPushButton("Connect")
         self.ip = None
         layout = QVBoxLayout()
         layout.addWidget(self.label)
@@ -232,13 +222,13 @@ class ConnectingDialog(QDialog):
     # okno mówiące o oczekiwaniu na garcza
     def __init__(self, parent=None):
         super(ConnectingDialog, self).__init__(parent)
-        self.label = QLabel("Oczekiwanie na połączenie...")
+        self.label = QLabel("Wainting for connection...")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.label)
         self.setLayout(self.layout)
 
     def found_player(self):
-        self.label.setText("Znaleziono gracza!")
+        self.label.setText("Player found!")
         self.layout.addWidget(self.label)
         self.button = QPushButton("OK")
         self.layout.addWidget(self.button)
@@ -250,7 +240,7 @@ class WaitDialog(QDialog):
     def __init__(self, parent=None):
         super(WaitDialog, self).__init__(parent)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
-        self.label = QLabel("Oczekiwanie na ruch przeciwnika...")
+        self.label = QLabel("Waiting for your opponent...")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.label)
         self.setLayout(self.layout)
@@ -258,7 +248,7 @@ class WaitDialog(QDialog):
 
 class EndGameDialog(QDialog):
     # okno mówiące o oczekiwaniu na garcza
-    def __init__(self, parent=None, text="Koniec Gry!"):
+    def __init__(self, parent=None, text="Game Over!"):
         super(EndGameDialog, self).__init__(parent)
         self.label = QLabel(text)
         self.layout = QVBoxLayout()
@@ -273,7 +263,7 @@ class FormPort(QDialog):
     # Okno do zmiany portu
     def __init__(self, parent=None, port=None):
         super(FormPort, self).__init__(parent)
-        self.label = QLabel("Wpisz Port:")
+        self.label = QLabel("Type port:")
         self.edit = QLineEdit(str(port))
         self.button = QPushButton("OK")
         self.port = port
@@ -297,7 +287,7 @@ class FormSize(QDialog):
     def __init__(self, parent=None, size=3):
         super(FormSize, self).__init__(parent)
         self.label = QLabel(
-            "Wybierz rozmiar:\n(Wybranie nowego rozmiaru zresetuje postęp!)")
+            "Select size:\n(Selecting size will start a new game!)")
         self.size = size
         self.button_3x = QRadioButton("3x3x3")
         self.button_4x = QRadioButton("4x4x4")
@@ -354,9 +344,9 @@ class Window(QtWidgets.QMainWindow):
         self.score_1 = 0
         self.score_2 = 0
         self.score_3 = 0
-        self.score_label_text = "Wynik: " + str(self.score)
+        self.score_label_text = "Score: " + str(self.score)
         self.start_pos = None  # pozycja startowa przy kliknięciu (do obłsługi gestów)
-        self.name = "Gracz"
+        self.name = "Player"
 
         # zmienne do trybu wieloosobowego
         self.first_loop = QtCore.QEventLoop()
@@ -368,9 +358,9 @@ class Window(QtWidgets.QMainWindow):
         self.enemy_board = None
         self.enemy_score = 2
         self.enemy_score_label = QLabel(self)
-        self.enemy_score_label_text = "Wynik: " + str(self.enemy_score_label)
+        self.enemy_score_label_text = "Score: " + str(self.enemy_score_label)
         self.width = 600
-        self.height = 800
+        self.height = 600
         self.ip_addr = "localhost"
         self.port = 10000
 
@@ -380,11 +370,8 @@ class Window(QtWidgets.QMainWindow):
         self.setMaximumWidth(self.width)
         self.setMouseTracking(True)
         self.create_buttons()
-        self.create_text_field()
         self.create_board_GUI()
         self.create_menu_bar()
-        sys.stdout = EmittingStream()
-        sys.stdout.text_written.connect(self.normalOutputWritten)
         gen_number(self.board)
         print_board(self.board)
         self.show()
@@ -437,24 +424,13 @@ class Window(QtWidgets.QMainWindow):
         button_left = QPushButton("⬅", self)
         button_down_right = QPushButton("↘", self)
         button_down_left = QPushButton("↙", self)
-        button_new_game = QPushButton("Nowa gra", self)
-        button_close = QPushButton("Wyjście", self)
-        button_save = QPushButton("Zapisz", self)
-        button_load = QPushButton("Emuluj", self)
-        button_autoplay = QPushButton("Autorozgrywka", self)
 
-        button_up_right.setGeometry(self.width / 2, 600, 50, 50)
-        button_up_left.setGeometry(self.width / 2 - 45, 600, 50, 50)
-        button_right.setGeometry(self.width / 2, 650, 50, 50)
-        button_left.setGeometry(self.width / 2 - 45, 650, 50, 50)
-        button_down_right.setGeometry(self.width / 2, 700, 50, 50)
-        button_down_left.setGeometry(self.width / 2 - 45, 700, 50, 50)
-
-        button_new_game.setGeometry(10, 550, 150, 50)
-        button_save.setGeometry(10, 600, 150, 50)
-        button_load.setGeometry(10, 650, 150, 50)
-        button_autoplay.setGeometry(10, 700, 150, 50)
-        button_close.setGeometry(10, 750, 150, 50)
+        button_up_right.setGeometry(self.width / 2, 450, 50, 50)
+        button_up_left.setGeometry(self.width / 2 - 43, 450, 50, 50)
+        button_right.setGeometry(self.width / 2, 500, 50, 50)
+        button_left.setGeometry(self.width / 2 - 43, 500, 50, 50)
+        button_down_right.setGeometry(self.width / 2, 550, 50, 50)
+        button_down_left.setGeometry(self.width / 2 - 43, 550, 50, 50)
 
         button_up_right.clicked.connect(lambda: self.handle_buttons("e"))
         button_up_left.clicked.connect(lambda: self.handle_buttons("w"))
@@ -462,40 +438,6 @@ class Window(QtWidgets.QMainWindow):
         button_right.clicked.connect(lambda: self.handle_buttons("d"))
         button_down_right.clicked.connect(lambda: self.handle_buttons("x"))
         button_down_left.clicked.connect(lambda: self.handle_buttons("z"))
-        button_new_game.clicked.connect(self.new_game)
-        button_load.clicked.connect(self.load_game)
-        button_save.clicked.connect(self.save_game)
-        button_close.clicked.connect(self.exit_app)
-
-    def create_text_field(self):
-        # Okno tekstowe
-        self.text_field = QTextEdit(self)
-        self.text_field.setReadOnly(True)
-        self.text_field.setGeometry(0, 24, 600, 170)
-        pallete = QtGui.QPalette()
-        pallete.setColor(QtGui.QPalette.Base, QtGui.QColor(20, 20, 20, 150))
-        self.text_field.setPalette(pallete)
-
-    def normalOutputWritten(self, text):
-        # dodanie tekstu do konsoli
-        cursor = self.text_field.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
-        keyword_format = QtGui.QTextCharFormat()
-        keyword_format.setForeground(QtCore.Qt.white)
-        keyword_format.setFontWeight(QtGui.QFont.Light)
-        cursor.setCharFormat(keyword_format)
-        # zachowanie kolorów w polu tekstowym
-        if text.startswith("\033[94m"):
-            text = str(text)[:-4]
-            text = str(text)[5:]
-            keyword_format.setForeground(QtGui.QColor(91, 133, 160, 255))
-            keyword_format.setFontWeight(QtGui.QFont.Bold)
-            cursor.setCharFormat(keyword_format)
-            cursor.insertText(text)
-        else:
-            cursor.insertText(text)
-        self.text_field.setTextCursor(cursor)
-        self.text_field.ensureCursorVisible()
 
     def handle_buttons(self, direction):
         # Obsługa przycisków od sterownia (i gestów)
@@ -518,8 +460,6 @@ class Window(QtWidgets.QMainWindow):
                     self.wait_for_move_dialog.close()
                     self.wait_for_move_dialog = None
                 enemy_direction = str(self.server.received_move)
-                print("Otrzymano ruch: '", self.server.received_move, end="' ")
-                print("od:", self.server.client_address)
 
             else:
                 self.client.send_move(direction)
@@ -531,8 +471,6 @@ class Window(QtWidgets.QMainWindow):
                     self.wait_for_move_dialog.close()
                     self.wait_for_move_dialog = None
                 enemy_direction = str(self.client.received_move)
-                print("Otrzymano ruch: '", self.client.received_move, end="' ")
-                print("od:", self.client.server_address)
             #print("ruch przeciwnika: ", enemy_direction)
             # czekaj na ruch przeciwnika
             self.multiplayer_game_loop(direction, enemy_direction)
@@ -546,52 +484,45 @@ class Window(QtWidgets.QMainWindow):
         # Menu bar z opcjiami
         menu_bar = self.menuBar()
         menu_bar.setNativeMenuBar(False)
-        file_menu = menu_bar.addMenu("Plik")
-        edit_menu = menu_bar.addMenu("Edycja")
-        options_menu = menu_bar.addMenu("Opcje")
+        file_menu = menu_bar.addMenu("File")
+        edit_menu = menu_bar.addMenu("Edit")
+        options_menu = menu_bar.addMenu("Options")
 
-        new_game_action = QAction("Nowa gra", self)
+        new_game_action = QAction("New game", self)
         new_game_action.setShortcut("Ctrl+N")
         new_game_action.triggered.connect(self.new_game)
 
-        save_game_action = QAction("Zapisz grę", self)
+        save_game_action = QAction("Save game", self)
         save_game_action.setShortcut("Ctrl+S")
         save_game_action.triggered.connect(self.save_game)
 
-        save_config_action = QAction("Zapisz konfigurację", self)
+        save_config_action = QAction("Save configuration", self)
         save_config_action.triggered.connect(self.save_configuration)
 
-        load_config_action = QAction("Odczytaj konfigurację", self)
+        load_config_action = QAction("Load configuration", self)
         load_config_action.triggered.connect(self.load_configuration)
 
-        emulate_game_action = QAction("Emuluj", self)
-        emulate_game_action.setShortcut("Ctrl+L")
-        emulate_game_action.triggered.connect(self.load_game)
-
-        exit_action = QAction("Wyjście", self)
+        exit_action = QAction("Exit", self)
         exit_action.setShortcut("Ctrl+X")
         exit_action.triggered.connect(self.exit_app)
 
-        autoplay_action = QAction("Autorozgrywka", self)
-        search_palyer_action = QAction("Wyszukaj gracza", self)
+        search_palyer_action = QAction("Search for oponnet", self)
         search_palyer_action.triggered.connect(self.start_server)
-        connect_player_action = QAction("Połącz z drugim graczem", self)
+        connect_player_action = QAction("Connect to other player", self)
         connect_player_action.triggered.connect(self.connect_to_other_player)
 
-        ip_acction = QAction("Adres IP", self)
+        ip_acction = QAction("IP adress", self)
         ip_acction.triggered.connect(self.create_dialog_ip)
-        port_action = QAction("Port połącznia", self)
+        port_action = QAction("Port", self)
         port_action.triggered.connect(self.create_dialog_port)
-        size_acction = QAction("Rozmiar planszy", self)
+        size_acction = QAction("Board size", self)
         size_acction.triggered.connect(self.create_dialog_size)
 
         file_menu.addAction(new_game_action)
         file_menu.addAction(save_game_action)
         file_menu.addAction(save_config_action)
         file_menu.addAction(load_config_action)
-        file_menu.addAction(emulate_game_action)
         file_menu.addAction(exit_action)
-        edit_menu.addAction(autoplay_action)
         edit_menu.addAction(search_palyer_action)
         edit_menu.addAction(connect_player_action)
         options_menu.addAction(ip_acction)
@@ -619,7 +550,6 @@ class Window(QtWidgets.QMainWindow):
         self.scene.clear()
         self.board = create_board(self.size, False)
         self.view.setFixedSize(600, 800)
-        print("\nNowa gra\n")
         gen_number(self.board)
         print_board(self.board)
         self.score = 2
@@ -628,7 +558,7 @@ class Window(QtWidgets.QMainWindow):
 
     def save_game(self):
         # okno do zapisu
-        name = QFileDialog.getSaveFileName(self, "Zapisz grę")
+        name = QFileDialog.getSaveFileName(self, "Save game")
         # zapis do xml
         data = ET.Element("data")
         size_el = ET.SubElement(data, "size")
@@ -645,14 +575,14 @@ class Window(QtWidgets.QMainWindow):
         try:
             tree = ET.ElementTree(data)
             tree.write(name[0] + ".xml", encoding='utf-8')
-            print("\nZapisano: " + name[0] + ".xml \n")
+            print("\nSaved: " + name[0] + ".xml \n")
         except FileNotFoundError as error:
             print(error)
 
     def load_game(self):
         # otwórz plik xml
         self.mulitplayer_mode = False
-        name = QFileDialog.getOpenFileName(None, "Wczytaj grę", "",
+        name = QFileDialog.getOpenFileName(None, "Load game", "",
                                            "XML files (*.xml)")
 
         parser = ET.XMLParser(encoding="utf-8")
@@ -669,7 +599,7 @@ class Window(QtWidgets.QMainWindow):
         self.boards_history = []
         self.score = 2
         self.create_board_GUI()
-        self.view.setFixedSize(600, 800)
+        self.view.setFixedSize(600, 600)
 
         # dane z xml (zapisane wartości planszy) do tablicy board
         i = 0
@@ -685,7 +615,7 @@ class Window(QtWidgets.QMainWindow):
                 else:
                     self.board[i][j] = None
 
-        print("\nWczytano grę\n")
+        print("\nGame loaded!\n")
         print_board(self.board)
 
     def save_configuration(self):
@@ -705,12 +635,12 @@ class Window(QtWidgets.QMainWindow):
         try:
             with open("config.json") as json_file:
                 data = json.load(json_file)
-                print("Nazwa: " + data["name"])
+                print("Name: " + data["name"])
                 print("IP: " + data["IP"])
                 print("Port: " + str(data["port"]))
-                print("Wynik 1: " + str(data["score_1"]))
-                print("Wynik 2: " + str(data["score_2"]))
-                print("Wynik 3: " + str(data["score_3"]))
+                print("Score 1: " + str(data["score_1"]))
+                print("Score 2: " + str(data["score_2"]))
+                print("Score 3: " + str(data["score_3"]))
                 self.name = data["name"]
                 self.ip_addr = data["IP"]
                 self.port = data["port"]
@@ -719,7 +649,7 @@ class Window(QtWidgets.QMainWindow):
                 self.score_3 = data["score_3"]
         except FileNotFoundError as error:
             print(error)
-            print("Brak zapisanej wcześniej konfiguracji!")
+            print("No previous configuration!")
 
     def update_score(self, board, label, label_text, score):
         for j in range(len(board)):
@@ -727,7 +657,7 @@ class Window(QtWidgets.QMainWindow):
                 if board[i][j] is not None:
                     if board[i][j].value > score:
                         score = board[i][j].value
-        label_text = "Wynik: " + str(score)
+        label_text = "Score: " + str(score)
         label.setText(label_text)
         self.scene.update()
 
@@ -735,7 +665,7 @@ class Window(QtWidgets.QMainWindow):
         self.width = 600
         self.setMinimumWidth(self.width)
         self.setMaximumWidth(self.width)
-        self.text_field.setGeometry(0, 24, 600, 170)
+        self.view.setFixedSize(600, 600)
         self.scene.clear()
 
         taupe_brush = QBrush(QtGui.QColor(207, 203, 206, 255))
@@ -755,8 +685,7 @@ class Window(QtWidgets.QMainWindow):
         self.width = 1200
         self.setMinimumWidth(self.width)
         self.setMaximumWidth(self.width)
-        self.view.setFixedSize(1200, 800)
-        self.text_field.setGeometry(0, 24, 1200, 170)
+        self.view.setFixedSize(1200, 600)
         self.scene.clear()
 
         # rysowanie planszy gracza
@@ -807,7 +736,7 @@ class Window(QtWidgets.QMainWindow):
                     p1.append(
                         QtCore.QPoint(
                             (3 / self.size) * (100 * x[n] + shift + space),
-                            (3 / self.size) * 100 * y[n]))
+                            (3 / self.size) * (100 * y[n])))
                 self.scene.addPolygon(p1, pen, brush)
 
         # zwraca środki heksagonów
@@ -874,31 +803,17 @@ class Window(QtWidgets.QMainWindow):
             self.loop.exec_()
             enemy_pos_x = self.server.received_pos_x
             enemy_pos_y = self.server.received_pos_y
-            print("Otrzymano pozycję x nowego klocka: '",
-                  self.server.received_pos_x,
-                  end="' ")
-            print("Otrzymano pozycję y nowego klocka: '",
-                  self.server.received_pos_y,
-                  end="' ")
-            print("od:", self.server.client_address)
         else:
             self.client.send_pos(my_pos_x, my_pos_y)
             # czeka na pozycje od przeciwnika
             self.loop.exec_()
             enemy_pos_x = self.client.received_pos_x
             enemy_pos_y = self.client.received_pos_y
-            print("Otrzymano pozycję x nowego klocka: '",
-                  self.client.received_pos_x,
-                  end="' ")
-            print("Otrzymano pozycję y nowego klocka: '",
-                  self.client.received_pos_y,
-                  end="' ")
-            print("od:", self.client.server_address)
 
-        print("\nPlansza gracza: ")
+        print("\nPlayer board: ")
         print_board(self.board)
         update_enemy_board(self.enemy_board, enemy_pos_x, enemy_pos_y)
-        print("\nPlansza przeciwnika: ")
+        print("\nOpponent board: ")
         print_board(self.enemy_board)
         self.score = 2
         self.enemy_score = 2
@@ -918,39 +833,25 @@ class Window(QtWidgets.QMainWindow):
                 self.loop.exec_()
                 enemy_pos_x = self.server.received_pos_x
                 enemy_pos_y = self.server.received_pos_y
-                print("Otrzymano pozycję x nowego klocka: '",
-                      self.server.received_pos_x,
-                      end="' ")
-                print("Otrzymano pozycję y nowego klocka: '",
-                      self.server.received_pos_y,
-                      end="' ")
-                print("od:", self.server.client_address)
             else:
                 self.client.send_pos(my_pos_x, my_pos_y)
                 # czeka na pozycje od przeciwnika
                 self.loop.exec_()
                 enemy_pos_x = self.client.received_pos_x
                 enemy_pos_y = self.client.received_pos_y
-                print("Otrzymano pozycję x nowego klocka: '",
-                      self.client.received_pos_x,
-                      end="' ")
-                print("Otrzymano pozycję y nowego klocka: '",
-                      self.client.received_pos_y,
-                      end="' ")
-                print("od:", self.client.server_address)
             update_enemy_board(self.enemy_board, enemy_pos_x, enemy_pos_y)
-            print("\nPlansza gracza: ")
+            print("\nPlayer board: ")
             print_board(self.board)
-            print("\nPlansza przeciwnika: ")
+            print("\nOponent board: ")
             print_board(self.enemy_board)
         elif game_over_enemy:
-            print("KONIEC GRY- Wygryna!")
-            self.end_dialog = EndGameDialog(self, "KONIEC GRY- Wygryna!")
+            print("Game over- You won!")
+            self.end_dialog = EndGameDialog(self, "Game over- You won!")
             self.end_dialog.show()
             self.new_game()
         elif game_over_player:
-            print("KONIEC GRY- Przerana!")
-            self.end_dialog = EndGameDialog(self, "KONIEC GRY- Przerana!")
+            print("Game over- You lost!")
+            self.end_dialog = EndGameDialog(self, "Game over- You lost!")
             self.end_dialog.show()
             self.new_game()
 
@@ -966,8 +867,8 @@ class Window(QtWidgets.QMainWindow):
                 self.score_2 = self.score
             if self.score > self.score_3:
                 self.score_3 = self.score
-            print("KONIEC GRY")
-            self.end_dialog = EndGameDialog(self, "KONIEC GRY!")
+            print("Game over")
+            self.end_dialog = EndGameDialog(self, "Game over")
             self.end_dialog.show()
             self.new_game()
 
