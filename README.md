@@ -6,13 +6,9 @@
 
 The game includes two modes: singleplayer and multiplayer. Singleplayer mode is standard 2048 game, however the shape of the bard is. hexagonal. Multiplayer mode allows two players compete with one another.
 
-![screenshot_1.png](/Users/mateuszwitka-jezewski/Documents/Porftolio/Hex%202048/img/screenshot_1.png)
+![](https://raw.githubusercontent.com/mwitjez/Hex-2048/master/img/screenshot_1.png)
 
-![screenshot_2.png](/Users/mateuszwitka-jezewski/Documents/Porftolio/Hex%202048/img/screenshot_2.png)
-
-
-
-
+![](https://raw.githubusercontent.com/mwitjez/Hex-2048/master/img/screenshot_2.png)
 
 ---
 
