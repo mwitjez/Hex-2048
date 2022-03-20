@@ -4,7 +4,7 @@
 
 #### About
 
-The game includes two modes: singleplayer and multiplayer. Singleplayer mode is standard 2048 game, however the shape of the bard is. hexagonal. Multiplayer mode allows two players compete with one another.
+The game includes two modes: singleplayer and multiplayer. Singleplayer mode is a standard 2048 game. However, the shape of the bard is hexagonal. Multiplayer mode allows two players to compete with one another.
 
 ![](https://raw.githubusercontent.com/mwitjez/Hex-2048/master/img/screenshot_1.png)
 
@@ -14,7 +14,7 @@ The game includes two modes: singleplayer and multiplayer. Singleplayer mode is 
 
 #### Technology
 
-The game was made in python language using PySide2 and numpy.
+The game was made in python language using PySide2 and NumPy.
 
 ---
 
